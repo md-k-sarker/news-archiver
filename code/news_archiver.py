@@ -213,6 +213,9 @@ def archive_newspaper(base_url: str, csv_writer):
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             # Log only original URL and submission timestamp
             csv_writer.writerow([newspaper_domain, link, timestamp])
+            # Wait 60 seconds so not to be blocked by the archive.today
+            print("⏳ Waiting 60 seconds so not to be blocked by the archive.today...")
+            time.sleep(60)
         except Exception as e:
             logging.error(f"Failed to submit {link} for archiving: {e}")
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

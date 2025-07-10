@@ -1,0 +1,51 @@
+name: Daily Archive
+
+on:
+  schedule:
+    - cron: '0 7 * * *'  # Runs daily at 07:00 UTC
+  workflow_dispatch:      # Allow manual trigger
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: ⚙️ Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
+      - name: 📦 Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: 🔧 Run Chrome setup
+        run: python code/setup_chrome_and_driver_mac.py
+
+      - name: 🚀 Run archiver script
+        run: python code/news_archiver.py
+
+      # - name: 📁 Move CSV to archive-requested-logs/
+      #   run: |
+      #     mkdir -p archive-requested-logs
+      #     mv archive-requested/all_articles_*.csv archive-requested-logs/ || echo "No file to move."
+
+      # - name: 🔐 Set up Git config
+      #   run: |
+      #     git config --global user.name "github-actions[bot]"
+      #     git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # - name: ✅ Commit and push CSV log
+      #   run: |
+      #     git add archive-requested-logs/
+      #     git commit -m "📦 Add daily archive log ($(date +'%Y-%m-%d'))" || echo "No changes to commit."
+      #     git push origin HEAD:${{ github.ref_name }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

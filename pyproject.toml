@@ -1,0 +1,37 @@
+[project]
+name = "news-archiver"
+version = "0.1.0"
+description = "Daily archiver for Bangladeshi newspapers using Archive.today"
+authors = [
+  { name="Md Kamruzzaman Sarker" }
+]
+readme = "README.md"
+license = { text = "CC BY-NC 4.0" }
+requires-python = ">=3.8"
+
+dependencies = [
+  "requests",
+  "beautifulsoup4",
+  "selenium",
+  "webdriver-manager"
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["code"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+  "test"
+]

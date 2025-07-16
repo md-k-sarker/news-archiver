@@ -30,7 +30,7 @@ jobs:
         run: python code/setup_chrome_and_driver_mac.py
 
       - name: 🚀 Run archiver script
-        run: python code/news_archiver.py
+        # run: python code/news_archiver.py -- pause running for now
 
       # - name: 📁 Move CSV to archive-requested-logs/
       #   run: |

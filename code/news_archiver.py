@@ -229,30 +229,31 @@ def archive_all():
     Load all newspapers and archive their articles.
     This function controls the full pipeline.
     """
-    newspaper_urls = load_newspaper_urls(NEWSPAPER_FILE)
-    if not newspaper_urls:
-        print("⚠️ No newspapers found.")
-        return
+    pass
+    # newspaper_urls = load_newspaper_urls(NEWSPAPER_FILE)
+    # if not newspaper_urls:
+    #     print("⚠️ No newspapers found.")
+    #     return
 
-    print("🗞️ Starting daily archiving...")
+    # print("🗞️ Starting daily archiving...")
 
-    try:
-        with open(CSV_OUTPUT_FILE, "w", newline='', encoding='utf-8') as csvfile:
-            csv_writer = csv.writer(csvfile)
-            # CSV header: Newspaper Domain, Original URL, Submission Timestamp
-            csv_writer.writerow(["Newspaper", "Original URL", "Submission Timestamp"])
+    # try:
+    #     with open(CSV_OUTPUT_FILE, "w", newline='', encoding='utf-8') as csvfile:
+    #         csv_writer = csv.writer(csvfile)
+    #         # CSV header: Newspaper Domain, Original URL, Submission Timestamp
+    #         csv_writer.writerow(["Newspaper", "Original URL", "Submission Timestamp"])
 
-            for url in newspaper_urls:
-                try:
-                    archive_newspaper(url, csv_writer)
-                except Exception as e:
-                    logging.error(f"Error processing {url}: {e}")
-                    continue
-    except Exception as e:
-        logging.critical(f"Failed to create or write CSV file: {e}")
+    #         for url in newspaper_urls:
+    #             try:
+    #                 archive_newspaper(url, csv_writer)
+    #             except Exception as e:
+    #                 logging.error(f"Error processing {url}: {e}")
+    #                 continue
+    # except Exception as e:
+    #     logging.critical(f"Failed to create or write CSV file: {e}")
 
-    print(f"\n✅ All done. Submission log saved to: {CSV_OUTPUT_FILE}")
-    logging.info("=== Daily Archive Submission Completed ===")
+    # print(f"\n✅ All done. Submission log saved to: {CSV_OUTPUT_FILE}")
+    # logging.info("=== Daily Archive Submission Completed ===")
 
 
 

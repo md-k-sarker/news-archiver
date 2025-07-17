@@ -6,6 +6,7 @@ import time
 import os
 import logging
 import csv
+import savepagenow
 from typing import List, Set, Tuple
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -14,7 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 # ========================== Config ==============================
 # Path relative to this script's location
 NEWSPAPER_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "newspapers.txt")  # File containing newspaper homepage URLs
-ARCHIVE_SUBMIT_URL = "https://archive.today/submit/"  # Archive.today submission endpoint
+ARCHIVE_SUBMIT_URL = "https://archive/submit/"  # archive submission endpoint
 HEADERS = {"User-Agent": "Mozilla/5.0"}  # Request headers to mimic a browser
 REQUEST_TIMEOUT = 30  # Max request wait time
 DELAY_BETWEEN_REQUESTS = 10  # Delay between submissions to avoid rate-limiting
@@ -164,11 +165,10 @@ def extract_today_links(base_url: str, html: str) -> List[str]:
 
     return sorted(set(links))
 
-from datetime import datetime
 
 def submit_to_archive(url: str) -> None:
     """
-    Submit a URL to archive.today without waiting for processing result.
+    Submit a URL to archive without waiting for processing result.
 
     Args:
         url (str): The original article URL.
@@ -180,9 +180,25 @@ def submit_to_archive(url: str) -> None:
         # Submit the URL via POST request; ignore the response content
         requests.post(ARCHIVE_SUBMIT_URL, data={"url": url}, headers=HEADERS, timeout=REQUEST_TIMEOUT)
     except Exception as e:
-        logging.error(f"Exception while submitting to archive.today for {url}: {e}")
+        logging.error(f"Exception while submitting to archive for {url}: {e}")
     # No return value, no verification
 
+def submit_to_archive_and_wait(url: str) -> None:
+    """
+    Submit a URL to archive.org using the savepagenow api and wait to get the cashed page's url.
+
+    Args:
+        url (str): The original article URL.
+
+    Returns:
+        archived url
+    """
+    try:
+        # Submit the URL via POST request; ignore the response content
+        archived_url, captured = savepagenow.capture_or_cache(url)
+    except Exception as e:
+        logging.error(f"Exception while submitting to archive.org for {url}: {e}")
+    return archived_url
 
 def archive_newspaper(base_url: str, csv_writer):
     """
@@ -209,13 +225,14 @@ def archive_newspaper(base_url: str, csv_writer):
     for idx, link in enumerate(links, 1):
         print(f"📤 [{idx}/{len(links)}] Submitting for archiving: {link}")
         try:
-            submit_to_archive(link)
+            archived_url = submit_to_archive_and_wait(link)
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            # Log only original URL and submission timestamp
-            csv_writer.writerow([newspaper_domain, link, timestamp])
-            # Wait 60 seconds so not to be blocked by the archive.today
-            print("⏳ Waiting 60 seconds so not to be blocked by the archive.today...")
-            time.sleep(60)
+            # Log the original URL, archived_url and submission timestamp
+            csv_writer.writerow([newspaper_domain, link, archived_url, timestamp])
+            print(f"📤 [{idx}/{len(links)}] Archieved at: {archived_url}")
+            # Wait 30 seconds so not to be blocked by the archive
+            print("⏳ Waiting 30 seconds so not to be blocked by the archive...")
+            time.sleep(30)
         except Exception as e:
             logging.error(f"Failed to submit {link} for archiving: {e}")
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -229,31 +246,35 @@ def archive_all():
     Load all newspapers and archive their articles.
     This function controls the full pipeline.
     """
-    pass
-    # newspaper_urls = load_newspaper_urls(NEWSPAPER_FILE)
-    # if not newspaper_urls:
-    #     print("⚠️ No newspapers found.")
-    #     return
+    newspaper_urls = load_newspaper_urls(NEWSPAPER_FILE)
+    if not newspaper_urls:
+        print("⚠️ No newspapers found.")
+        return
 
-    # print("🗞️ Starting daily archiving...")
+    print("🗞️ Starting daily archiving...")
 
-    # try:
-    #     with open(CSV_OUTPUT_FILE, "w", newline='', encoding='utf-8') as csvfile:
-    #         csv_writer = csv.writer(csvfile)
-    #         # CSV header: Newspaper Domain, Original URL, Submission Timestamp
-    #         csv_writer.writerow(["Newspaper", "Original URL", "Submission Timestamp"])
+    # Write the CSV header once if the file doesn't already exist
+    if not os.path.exists(CSV_OUTPUT_FILE):
+        try:
+            with open(CSV_OUTPUT_FILE, "w", newline='', encoding='utf-8') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerow(["Newspaper", "Original URL", "Archieved URL", "Submission Timestamp"])
+        except Exception as e:
+            logging.critical(f"Failed to create or write CSV header: {e}")
+            return
 
-    #         for url in newspaper_urls:
-    #             try:
-    #                 archive_newspaper(url, csv_writer)
-    #             except Exception as e:
-    #                 logging.error(f"Error processing {url}: {e}")
-    #                 continue
-    # except Exception as e:
-    #     logging.critical(f"Failed to create or write CSV file: {e}")
+    # Now append each result after processing
+    for url in newspaper_urls:
+        try:
+            with open(CSV_OUTPUT_FILE, "a", newline='', encoding='utf-8') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                archive_newspaper(url, csv_writer)
+        except Exception as e:
+            logging.error(f"Error processing {url}: {e}")
+            continue
 
-    # print(f"\n✅ All done. Submission log saved to: {CSV_OUTPUT_FILE}")
-    # logging.info("=== Daily Archive Submission Completed ===")
+    print(f"\n✅ All done. Submission log saved to: {CSV_OUTPUT_FILE}")
+    logging.info("=== Daily Archive Submission Completed ===")
 
 
 

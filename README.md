@@ -1,6 +1,6 @@
 # 📰 Newspaper Daily Archiver
 
-This project automates the **daily archiving of newspaper articles** using [Archive.today](https://archive.today/), with a primary focus on Bangladeshi newspapers for now. It extracts all articles from the homepage of selected newspapers each day and submits them for permanent storage. The output is a CSV log containing original article URLs, archive URLs, and success status — useful for researchers, journalists, and digital preservationists.
+This project automates the **daily archiving of newspaper articles** using [Archive.org](https://archive.org/), with a primary focus on Bangladeshi newspapers for now. It extracts all articles from the homepage of selected newspapers each day and submits them for permanent storage. The output is a CSV log containing original article URLs, archive URLs, and success status — useful for researchers, journalists, and digital preservationists.
 
 ---
 
@@ -59,7 +59,7 @@ pip install -r requirements.txt
 ### 4. Run the Script
 
 ```bash
-python multi_news_archiver.py
+python code/news_archiver.py
 ```
 
 * This will create a CSV file like `all_articles_2025-07-10.csv` containing:
